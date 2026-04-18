@@ -3,27 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Simplifié | Congo Pétrole</title>
+    <title>Admin Flux | Congo Pétrole</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background: #0f172a; color: white; font-family: sans-serif; }
-        .card { background: #1e293b; border-radius: 15px; padding: 20px; margin-bottom: 20px; border: 1px solid #334155; }
-        .btn-v { background: #22c55e; color: white; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 12px; }
-        .btn-r { background: #ef4444; color: white; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 12px; }
-        .badge { background: #f59e0b; color: black; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+        .card { background: #1e293b; border-radius: 12px; padding: 15px; margin-bottom: 12px; border: 1px solid #334155; }
+        .btn-green { background: #22c55e; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; font-size: 11px; uppercase; }
+        .btn-red { background: #ef4444; color: white; padding: 8px 12px; border-radius: 6px; font-weight: bold; font-size: 11px; }
     </style>
 </head>
-<body class="p-5">
+<body class="p-4">
 
-    <h1 class="text-xl font-bold mb-6 text-amber-500 italic">CONGO PÉTROLE - GESTION DES FLUX</h1>
+    <h1 class="text-lg font-black mb-6 text-amber-500 italic uppercase tracking-tighter">Congo Pétrole — Gestion</h1>
 
-    <div class="mb-10">
-        <h2 class="text-sm uppercase tracking-widest mb-4 text-slate-400">📥 Recharges à valider</h2>
+    <div class="mb-8">
+        <h2 class="text-[10px] uppercase tracking-widest mb-3 text-slate-500 font-bold">📥 Attente de Recharge</h2>
         <div id="list-recharges"></div>
     </div>
 
-    <div class="mb-10">
-        <h2 class="text-sm uppercase tracking-widest mb-4 text-slate-400">📤 Retraits à payer</h2>
+    <div class="mb-8">
+        <h2 class="text-[10px] uppercase tracking-widest mb-3 text-slate-500 font-bold">📤 Attente de Paiement</h2>
         <div id="list-retraits"></div>
     </div>
 
@@ -35,12 +34,12 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // --- GÉRER LES RECHARGES ---
+        // --- GESTION DES RECHARGES ---
         onValue(ref(db, 'congo_petrole/recharges'), (snap) => {
             const data = snap.val();
             const container = document.getElementById('list-recharges');
             container.innerHTML = "";
-            if(!data) return container.innerHTML = "<p class='text-slate-500 text-xs'>Aucune recharge.</p>";
+            if(!data) return;
 
             Object.keys(data).forEach(id => {
                 const r = data[id];
@@ -48,13 +47,13 @@
                     container.innerHTML += `
                         <div class="card flex justify-between items-center">
                             <div>
-                                <p class="font-bold text-lg">${r.montant} FC</p>
-                                <p class="text-xs text-slate-400">Client: ${r.phone}</p>
-                                <p class="text-[10px] text-amber-500">Réf: ${r.transactionId || 'N/A'}</p>
+                                <p class="text-green-400 font-black text-base">${Number(r.montant).toLocaleString()} FC</p>
+                                <p class="text-[11px] text-slate-300">${r.phone}</p>
+                                <p class="text-[9px] text-slate-500">Réf: ${r.transactionId || '---'}</p>
                             </div>
                             <div class="flex gap-2">
-                                <button onclick="validerRecharge('${id}', '${r.phone}', ${r.montant})" class="btn-v">VALIDER</button>
-                                <button onclick="supprimerDemande('recharges', '${id}')" class="btn-r">X</button>
+                                <button onclick="validerRecharge('${id}', '${r.phone}', ${r.montant})" class="btn-green">VALIDER</button>
+                                <button onclick="supprimer('recharges', '${id}')" class="btn-red">X</button>
                             </div>
                         </div>`;
                 }
@@ -62,35 +61,44 @@
         });
 
         window.validerRecharge = async (id, phone, montant) => {
+            if(!confirm("Créditer " + montant + " FC sur le compte " + phone + " ?")) return;
+            
             const userRef = ref(db, `congo_petrole/users/${phone}`);
             const snap = await get(userRef);
+            
             if(snap.exists()){
-                const nouveauSolde = (Number(snap.val().balance) || 0) + Number(montant);
+                // AJOUT DU SOLDE (Calcul mathématique)
+                const soldeActuel = Number(snap.val().balance) || 0;
+                const nouveauSolde = soldeActuel + Number(montant);
+                
                 await update(userRef, { balance: nouveauSolde });
-                await update(ref(db, `congo_petrole/recharges/${id}`), { statut: "Terminé" }); // Disparaît car le statut change
-                alert("Recharge effectuée !");
+                // Changement de statut pour faire disparaître la ligne
+                await update(ref(db, `congo_petrole/recharges/${id}`), { statut: "Validé" });
+                alert("Succès : + " + montant + " FC ajoutés.");
+            } else {
+                alert("Erreur : Utilisateur introuvable.");
             }
         };
 
-        // --- GÉRER LES RETRAITS ---
+        // --- GESTION DES RETRAITS ---
         onValue(ref(db, 'congo_petrole/retraits'), (snap) => {
             const data = snap.val();
             const container = document.getElementById('list-retraits');
             container.innerHTML = "";
-            if(!data) return container.innerHTML = "<p class='text-slate-500 text-xs'>Aucun retrait.</p>";
+            if(!data) return;
 
             Object.keys(data).forEach(id => {
                 const r = data[id];
                 if(r.statut === "En attente") {
                     container.innerHTML += `
-                        <div class="card flex justify-between items-center border-red-900/30">
+                        <div class="card flex justify-between items-center">
                             <div>
-                                <p class="font-bold text-lg text-red-400">${r.montant} FC</p>
-                                <p class="text-xs text-slate-400">Vers: ${r.phone}</p>
+                                <p class="text-red-400 font-black text-base">${Number(r.montant).toLocaleString()} FC</p>
+                                <p class="text-[11px] text-slate-300">Dest : ${r.phone}</p>
                             </div>
                             <div class="flex gap-2">
-                                <button onclick="validerRetrait('${id}')" class="btn-v" style="background:#475569">PAYÉ</button>
-                                <button onclick="supprimerDemande('retraits', '${id}')" class="btn-r">X</button>
+                                <button onclick="validerRetrait('${id}')" class="btn-green" style="background:#475569">PAYÉ</button>
+                                <button onclick="supprimer('retraits', '${id}')" class="btn-red">X</button>
                             </div>
                         </div>`;
                 }
@@ -98,12 +106,12 @@
         });
 
         window.validerRetrait = async (id) => {
-            await update(ref(db, `congo_petrole/retraits/${id}`), { statut: "Payé" });
-            alert("Retrait marqué comme payé !");
+            if(!confirm("Marquer ce retrait comme payé ?")) return;
+            await update(ref(db, `congo_petrole/retraits/${id}`), { statut: "Terminé" });
         };
 
-        window.supprimerDemande = async (path, id) => {
-            if(confirm("Supprimer cette demande ?")) {
+        window.supprimer = async (path, id) => {
+            if(confirm("Supprimer définitivement ?")) {
                 await remove(ref(db, `congo_petrole/${path}/${id}`));
             }
         };
