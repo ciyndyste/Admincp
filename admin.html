@@ -40,14 +40,12 @@
                             <th class="p-5 text-center">Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="userTableBody" class="text-sm divide-y divide-slate-100">
-                        </tbody>
+                    <tbody id="userTableBody" class="text-sm divide-y divide-slate-100"></tbody>
                 </table>
             </div>
         </div>
 
         <div id="section-requests" class="hidden space-y-10">
-            
             <div class="bg-white rounded-3xl overflow-hidden border border-amber-200 card-shadow">
                 <div class="p-5 bg-amber-50/50 border-b border-amber-100 flex justify-between items-center">
                     <h2 class="font-black uppercase italic text-amber-800 text-xs tracking-widest">
@@ -64,8 +62,7 @@
                                 <th class="p-5">Décision</th>
                             </tr>
                         </thead>
-                        <tbody id="rechargeTableBody" class="text-xs divide-y divide-slate-100">
-                            </tbody>
+                        <tbody id="rechargeTableBody" class="text-xs divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
             </div>
@@ -86,12 +83,10 @@
                                 <th class="p-5">Action</th>
                             </tr>
                         </thead>
-                        <tbody id="withdrawalTableBody" class="text-xs divide-y divide-slate-100">
-                            </tbody>
+                        <tbody id="withdrawalTableBody" class="text-xs divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -122,7 +117,7 @@
                     tbody.innerHTML += `
                         <tr class="hover:bg-slate-50 transition-colors">
                             <td class="p-5 font-bold text-slate-700">${phone}</td>
-                            <td class="p-5 font-black text-green-600 italic">${(u.balance || 0).toLocaleString()} FC</td>
+                            <td class="p-5 font-black text-green-600 italic">${(Number(u.balance) || 0).toLocaleString()} FC</td>
                             <td class="p-5 text-[10px] font-black uppercase text-amber-500">
                                 ${u.vipActive ? '<span class="bg-amber-100 px-2 py-1 rounded">VIP ' + u.vipActive + '</span>' : '-'}
                             </td>
@@ -135,7 +130,7 @@
             }
         });
 
-        // 2. CHARGEMENT DES RECHARGES (CORRESPONDANCE AVEC TON FICHIER RECHARGE.HTML)
+        // 2. CHARGEMENT DES RECHARGES
         onValue(ref(db, 'congo_petrole/recharges'), (snap) => {
             const reqs = snap.val();
             const tbody = document.getElementById('rechargeTableBody');
@@ -143,19 +138,18 @@
             if(reqs) {
                 Object.keys(reqs).forEach(id => {
                     const r = reqs[id];
-                    // On vérifie "statut" envoyé par ton formulaire (avec un 'S' majuscule si nécessaire)
                     if(r.statut === "En attente") {
                         tbody.innerHTML += `
                             <tr class="border-b border-amber-50">
                                 <td class="p-5 font-bold">${r.phone}</td>
-                                <td class="p-5 font-black text-amber-600">${(r.montant || 0).toLocaleString()} FC</td>
+                                <td class="p-5 font-black text-amber-600">${(Number(r.montant) || 0).toLocaleString()} FC</td>
                                 <td class="p-5 text-slate-500">
-                                    <p class="font-bold text-slate-800">ID: ${r.transactionId || '?'}</p>
+                                    <p class="font-bold text-slate-800 uppercase text-[10px]">ID: ${r.transactionId || '?'}</p>
                                     <p class="text-[10px]">Exp: ${r.expediteur || '?'}</p>
                                 </td>
                                 <td class="p-5 flex gap-2">
-                                    <button onclick="approveRecharge('${id}', '${r.phone}', ${r.montant})" class="bg-green-500 text-white px-3 py-2 rounded-lg font-bold shadow-lg shadow-green-200">VALIDER</button>
-                                    <button onclick="rejectRequest('recharges', '${id}')" class="bg-red-50 text-red-500 px-3 py-2 rounded-lg font-bold">REFUSER</button>
+                                    <button onclick="approveRecharge('${id}', '${r.phone}', ${r.montant})" class="bg-green-600 text-white px-3 py-2 rounded-lg font-bold text-[10px] uppercase shadow-md shadow-green-100">VALIDER</button>
+                                    <button onclick="rejectRequest('recharges', '${id}')" class="bg-red-50 text-red-500 px-3 py-2 rounded-lg font-bold text-[10px] uppercase">REFUSER</button>
                                 </td>
                             </tr>
                         `;
@@ -169,20 +163,26 @@
             if(!confirm("Confirmez-vous la réception de " + montant + " FC ?")) return;
             
             const userRef = ref(db, `congo_petrole/users/${phone}`);
+            const rechargeRef = ref(db, `congo_petrole/recharges/${id}`);
+
             try {
                 const snapshot = await get(userRef);
                 if (snapshot.exists()) {
-                    const currentBalance = snapshot.val().balance || 0;
-                    const newBalance = currentBalance + parseFloat(montant);
+                    // CALCUL MATHÉMATIQUE FORCÉ
+                    const currentBalance = Number(snapshot.val().balance) || 0;
+                    const amountToAdd = Number(montant);
+                    const newBalance = currentBalance + amountToAdd;
                     
-                    // 1. Mise à jour du solde client
+                    // 1. Mise à jour du solde
                     await update(userRef, { balance: newBalance });
-                    // 2. Marquer la demande comme validée pour qu'elle disparaisse de la liste
-                    await update(ref(db, `congo_petrole/recharges/${id}`), { statut: "Validée" });
+                    // 2. Changement de statut (fait disparaître la ligne instantanément)
+                    await update(rechargeRef, { statut: "Validée" });
                     
-                    alert("Compte rechargé !");
+                    alert("Compte crédité ! Nouveau solde: " + newBalance.toLocaleString() + " FC");
+                } else {
+                    alert("Erreur : Utilisateur introuvable.");
                 }
-            } catch (e) { alert("Erreur Firebase."); }
+            } catch (e) { alert("Erreur Firebase : " + e.message); }
         };
 
         // 3. CHARGEMENT DES RETRAITS
@@ -197,10 +197,10 @@
                         tbody.innerHTML += `
                             <tr class="border-b border-red-50">
                                 <td class="p-5 font-bold">${r.phone || 'Inconnu'}</td>
-                                <td class="p-5 font-black text-red-600">${(r.montant || 0).toLocaleString()} FC</td>
-                                <td class="p-5 text-[9px] font-bold text-slate-400 uppercase italic">Action Manuelle Requise</td>
+                                <td class="p-5 font-black text-red-600">${(Number(r.montant) || 0).toLocaleString()} FC</td>
+                                <td class="p-5 text-[9px] font-bold text-slate-400 uppercase italic tracking-tighter">Paiement Manuel</td>
                                 <td class="p-5">
-                                    <button onclick="approveWithdrawal('${id}')" class="bg-slate-900 text-white px-4 py-2 rounded-lg font-black text-[10px] uppercase">Marquer Payé</button>
+                                    <button onclick="approveWithdrawal('${id}')" class="bg-[#020617] text-white px-4 py-2 rounded-lg font-black text-[10px] uppercase">Payé</button>
                                 </td>
                             </tr>
                         `;
@@ -209,23 +209,24 @@
             }
         });
 
-        window.approveWithdrawal = (id) => {
-            if(confirm("L'argent a-t-il été envoyé ?")) {
-                update(ref(db, `congo_petrole/retraits/${id}`), { statut: "Terminé" });
-                alert("Retrait complété.");
+        window.approveWithdrawal = async (id) => {
+            if(confirm("Confirmer que le transfert manuel a été effectué ?")) {
+                await update(ref(db, `congo_petrole/retraits/${id}`), { statut: "Terminé" });
+                alert("Retrait marqué comme terminé.");
             }
         };
 
-        window.rejectRequest = (path, id) => {
-            if(confirm("Supprimer cette demande ?")) {
-                remove(ref(db, `congo_petrole/${path}/${id}`));
+        window.rejectRequest = async (path, id) => {
+            if(confirm("Supprimer définitivement cette demande ?")) {
+                await remove(ref(db, `congo_petrole/${path}/${id}`));
             }
         };
 
-        window.editBal = (phone, current) => {
-            const add = prompt(`Modifier solde de ${phone}\nActuel: ${current} FC\nEntrez le montant à AJOUTER (ou mettre un - pour retirer) :`, "0");
+        window.editBal = async (phone, current) => {
+            const add = prompt(`Modifier solde de ${phone}\nActuel: ${current} FC\nAjouter (ex: 500) ou Retirer (ex: -500) :`, "0");
             if(add && !isNaN(add)) {
-                update(ref(db, `congo_petrole/users/${phone}`), { balance: current + parseFloat(add) });
+                const newTotal = Number(current) + Number(add);
+                await update(ref(db, `congo_petrole/users/${phone}`), { balance: newTotal });
             }
         };
     </script>
