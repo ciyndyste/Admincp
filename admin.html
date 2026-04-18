@@ -3,82 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Congo Pétrole | Gestion Financière</title>
+    <title>Admin - Congo Pétrole | Console de Gestion</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root { --gold: #f59e0b; --oil-black: #020617; }
         body { background: #f1f5f9; font-family: 'Inter', sans-serif; }
         .tab-active { border-bottom: 3px solid var(--gold); color: var(--gold); }
+        .card-shadow { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
 <body class="min-h-screen">
 
-    <nav class="bg-[#020617] text-white p-5 flex justify-between items-center shadow-xl">
+    <nav class="bg-[#020617] text-white p-5 flex justify-between items-center shadow-2xl sticky top-0 z-50">
         <div class="flex items-center gap-3">
-            <i class="fa-solid fa-shield-halved text-amber-500"></i>
-            <h1 class="font-black uppercase italic tracking-tighter">Congo Pétrole <span class="text-amber-500">Admin</span></h1>
+            <i class="fa-solid fa-shield-halved text-amber-500 text-xl"></i>
+            <h1 class="font-black uppercase italic tracking-tighter">Congo Pétrole <span class="text-amber-500 text-xs">ADMIN</span></h1>
         </div>
-        <div class="flex gap-6 text-xs font-bold uppercase">
-            <button onclick="switchTab('users')" id="btn-users" class="tab-active py-2">Partenaires</button>
-            <button onclick="switchTab('requests')" id="btn-requests" class="py-2">Demandes (Dépôts/Retraits)</button>
+        <div class="flex gap-6 text-[10px] font-black uppercase tracking-widest">
+            <button onclick="switchTab('users')" id="btn-users" class="tab-active py-2 transition-all">Partenaires</button>
+            <button onclick="switchTab('requests')" id="btn-requests" class="py-2 transition-all">Demandes</button>
         </div>
     </nav>
 
-    <div class="p-4 md:p-8">
+    <div class="p-4 md:p-8 max-w-7xl mx-auto">
         
         <div id="section-users" class="space-y-6">
-            <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-200">
+            <h2 class="text-xs font-black uppercase text-slate-400 tracking-widest mb-4">Base de données clients</h2>
+            <div class="bg-white rounded-3xl overflow-hidden border border-slate-200 card-shadow">
                 <table class="w-full text-left border-collapse">
-                    <thead class="bg-slate-50 text-[10px] uppercase font-black text-slate-400">
+                    <thead class="bg-slate-50 text-[10px] uppercase font-black text-slate-400 border-b">
                         <tr>
-                            <th class="p-4">Téléphone</th>
-                            <th class="p-4">Solde Actuel</th>
-                            <th class="p-4">VIP</th>
-                            <th class="p-4">Actions</th>
+                            <th class="p-5">Téléphone</th>
+                            <th class="p-5">Solde (FC)</th>
+                            <th class="p-5">Gisement Actif</th>
+                            <th class="p-5 text-center">Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="userTableBody" class="text-sm"></tbody>
+                    <tbody id="userTableBody" class="text-sm divide-y divide-slate-100">
+                        </tbody>
                 </table>
             </div>
         </div>
 
-        <div id="section-requests" class="hidden space-y-8">
+        <div id="section-requests" class="hidden space-y-10">
             
-            <div class="bg-white rounded-2xl shadow-lg border border-amber-200">
-                <div class="p-4 bg-amber-50 border-b border-amber-100 flex justify-between items-center">
-                    <h2 class="font-black uppercase italic text-amber-800 text-sm"><i class="fa-solid fa-money-bill-down mr-2"></i> Attente de Recharges</h2>
+            <div class="bg-white rounded-3xl overflow-hidden border border-amber-200 card-shadow">
+                <div class="p-5 bg-amber-50/50 border-b border-amber-100 flex justify-between items-center">
+                    <h2 class="font-black uppercase italic text-amber-800 text-xs tracking-widest">
+                        <i class="fa-solid fa-money-bill-transfer mr-2"></i> Attente de validation (Recharges)
+                    </h2>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
-                        <thead class="text-[9px] uppercase text-slate-400 bg-slate-50">
+                        <thead class="text-[9px] uppercase text-slate-400 bg-slate-50 font-black">
                             <tr>
-                                <th class="p-4">Client</th>
-                                <th class="p-4">Montant</th>
-                                <th class="p-4">Preuve / ID</th>
-                                <th class="p-4">Action</th>
+                                <th class="p-5">Client</th>
+                                <th class="p-5">Montant</th>
+                                <th class="p-5">Réf / Preuve</th>
+                                <th class="p-5">Décision</th>
                             </tr>
                         </thead>
-                        <tbody id="rechargeTableBody" class="text-xs"></tbody>
+                        <tbody id="rechargeTableBody" class="text-xs divide-y divide-slate-100">
+                            </tbody>
                     </table>
                 </div>
             </div>
 
-            <div class="bg-white rounded-2xl shadow-lg border border-red-200">
-                <div class="p-4 bg-red-50 border-b border-red-100">
-                    <h2 class="font-black uppercase italic text-red-800 text-sm"><i class="fa-solid fa-money-bill-up mr-2"></i> Demandes de Retrait</h2>
+            <div class="bg-white rounded-3xl overflow-hidden border border-red-200 card-shadow">
+                <div class="p-5 bg-red-50 border-b border-red-100">
+                    <h2 class="font-black uppercase italic text-red-800 text-xs tracking-widest">
+                        <i class="fa-solid fa-hand-holding-dollar mr-2"></i> Sortie de fonds (Retraits)
+                    </h2>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
-                        <thead class="text-[9px] uppercase text-slate-400 bg-slate-50">
+                        <thead class="text-[9px] uppercase text-slate-400 bg-slate-50 font-black">
                             <tr>
-                                <th class="p-4">Client</th>
-                                <th class="p-4">Montant</th>
-                                <th class="p-4">Status</th>
-                                <th class="p-4">Action</th>
+                                <th class="p-5">Client</th>
+                                <th class="p-5">Montant</th>
+                                <th class="p-5">Status</th>
+                                <th class="p-5">Action</th>
                             </tr>
                         </thead>
-                        <tbody id="withdrawalTableBody" class="text-xs"></tbody>
+                        <tbody id="withdrawalTableBody" class="text-xs divide-y divide-slate-100">
+                            </tbody>
                     </table>
                 </div>
             </div>
@@ -94,7 +103,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Navigation entre onglets
+        // SYSTÈME D'ONGLETS
         window.switchTab = (tab) => {
             document.getElementById('section-users').classList.toggle('hidden', tab !== 'users');
             document.getElementById('section-requests').classList.toggle('hidden', tab !== 'requests');
@@ -102,7 +111,7 @@
             document.getElementById('btn-requests').classList.toggle('tab-active', tab === 'requests');
         };
 
-        // 1. Charger Utilisateurs
+        // 1. CHARGEMENT DES UTILISATEURS
         onValue(ref(db, 'congo_petrole/users'), (snap) => {
             const users = snap.val();
             const tbody = document.getElementById('userTableBody');
@@ -111,12 +120,14 @@
                 Object.keys(users).forEach(phone => {
                     const u = users[phone];
                     tbody.innerHTML += `
-                        <tr class="border-b border-slate-100">
-                            <td class="p-4 font-bold text-slate-700">${phone}</td>
-                            <td class="p-4 font-black text-green-600">${(u.balance || 0).toLocaleString()} FC</td>
-                            <td class="p-4 text-[10px] font-black uppercase text-amber-500">${u.vipActive ? 'VIP '+u.vipActive : '-'}</td>
-                            <td class="p-4">
-                                <button onclick="window.editBal('${phone}', ${u.balance || 0})" class="bg-slate-800 text-white px-3 py-1 rounded-lg text-[10px]">Ajuster</button>
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="p-5 font-bold text-slate-700">${phone}</td>
+                            <td class="p-5 font-black text-green-600 italic">${(u.balance || 0).toLocaleString()} FC</td>
+                            <td class="p-5 text-[10px] font-black uppercase text-amber-500">
+                                ${u.vipActive ? '<span class="bg-amber-100 px-2 py-1 rounded">VIP ' + u.vipActive + '</span>' : '-'}
+                            </td>
+                            <td class="p-5 text-center">
+                                <button onclick="window.editBal('${phone}', ${u.balance || 0})" class="bg-slate-800 text-white px-4 py-2 rounded-xl text-[10px] font-bold uppercase hover:bg-black">Ajuster</button>
                             </td>
                         </tr>
                     `;
@@ -124,7 +135,7 @@
             }
         });
 
-        // 2. Charger Recharges (Dépôts)
+        // 2. CHARGEMENT DES RECHARGES (CORRESPONDANCE AVEC TON FICHIER RECHARGE.HTML)
         onValue(ref(db, 'congo_petrole/recharges'), (snap) => {
             const reqs = snap.val();
             const tbody = document.getElementById('rechargeTableBody');
@@ -132,15 +143,19 @@
             if(reqs) {
                 Object.keys(reqs).forEach(id => {
                     const r = reqs[id];
-                    if(r.status === "en_attente") {
+                    // On vérifie "statut" envoyé par ton formulaire (avec un 'S' majuscule si nécessaire)
+                    if(r.statut === "En attente") {
                         tbody.innerHTML += `
                             <tr class="border-b border-amber-50">
-                                <td class="p-4 font-bold">${r.userPhone}</td>
-                                <td class="p-4 font-black text-amber-600">${r.amount.toLocaleString()} FC</td>
-                                <td class="p-4 text-slate-500">${r.proofId || 'N/A'}</td>
-                                <td class="p-4 flex gap-2">
-                                    <button onclick="approveRecharge('${id}', '${r.userPhone}', ${r.amount})" class="bg-green-500 text-white px-3 py-1 rounded shadow">Approuver</button>
-                                    <button onclick="rejectRequest('recharges', '${id}')" class="bg-red-100 text-red-600 px-3 py-1 rounded">Refuser</button>
+                                <td class="p-5 font-bold">${r.phone}</td>
+                                <td class="p-5 font-black text-amber-600">${(r.montant || 0).toLocaleString()} FC</td>
+                                <td class="p-5 text-slate-500">
+                                    <p class="font-bold text-slate-800">ID: ${r.transactionId || '?'}</p>
+                                    <p class="text-[10px]">Exp: ${r.expediteur || '?'}</p>
+                                </td>
+                                <td class="p-5 flex gap-2">
+                                    <button onclick="approveRecharge('${id}', '${r.phone}', ${r.montant})" class="bg-green-500 text-white px-3 py-2 rounded-lg font-bold shadow-lg shadow-green-200">VALIDER</button>
+                                    <button onclick="rejectRequest('recharges', '${id}')" class="bg-red-50 text-red-500 px-3 py-2 rounded-lg font-bold">REFUSER</button>
                                 </td>
                             </tr>
                         `;
@@ -149,22 +164,28 @@
             }
         });
 
-        // FONCTION : Approuver Recharge
-        window.approveRecharge = async (id, phone, amount) => {
+        // ACTION : APPROUVER RECHARGE
+        window.approveRecharge = async (id, phone, montant) => {
+            if(!confirm("Confirmez-vous la réception de " + montant + " FC ?")) return;
+            
             const userRef = ref(db, `congo_petrole/users/${phone}`);
-            const snapshot = await get(userRef);
-            if (snapshot.exists()) {
-                const currentBalance = snapshot.val().balance || 0;
-                const newBalance = currentBalance + amount;
-                
-                // Mettre à jour le solde et marquer la demande comme validée
-                await update(userRef, { balance: newBalance });
-                await update(ref(db, `congo_petrole/recharges/${id}`), { status: "valide" });
-                alert("Compte rechargé avec succès !");
-            }
+            try {
+                const snapshot = await get(userRef);
+                if (snapshot.exists()) {
+                    const currentBalance = snapshot.val().balance || 0;
+                    const newBalance = currentBalance + parseFloat(montant);
+                    
+                    // 1. Mise à jour du solde client
+                    await update(userRef, { balance: newBalance });
+                    // 2. Marquer la demande comme validée pour qu'elle disparaisse de la liste
+                    await update(ref(db, `congo_petrole/recharges/${id}`), { statut: "Validée" });
+                    
+                    alert("Compte rechargé !");
+                }
+            } catch (e) { alert("Erreur Firebase."); }
         };
 
-        // 3. Charger Retraits
+        // 3. CHARGEMENT DES RETRAITS
         onValue(ref(db, 'congo_petrole/retraits'), (snap) => {
             const reqs = snap.val();
             const tbody = document.getElementById('withdrawalTableBody');
@@ -172,14 +193,14 @@
             if(reqs) {
                 Object.keys(reqs).forEach(id => {
                     const r = reqs[id];
-                    if(r.status === "en_attente") {
+                    if(r.statut === "En attente") {
                         tbody.innerHTML += `
                             <tr class="border-b border-red-50">
-                                <td class="p-4 font-bold">${r.userPhone}</td>
-                                <td class="p-4 font-black text-red-600">${r.amount.toLocaleString()} FC</td>
-                                <td class="p-4 text-slate-400 italic">Paiement manuel requis</td>
-                                <td class="p-4">
-                                    <button onclick="approveWithdrawal('${id}')" class="bg-slate-900 text-white px-3 py-1 rounded shadow">Marquer comme Payé</button>
+                                <td class="p-5 font-bold">${r.phone || 'Inconnu'}</td>
+                                <td class="p-5 font-black text-red-600">${(r.montant || 0).toLocaleString()} FC</td>
+                                <td class="p-5 text-[9px] font-bold text-slate-400 uppercase italic">Action Manuelle Requise</td>
+                                <td class="p-5">
+                                    <button onclick="approveWithdrawal('${id}')" class="bg-slate-900 text-white px-4 py-2 rounded-lg font-black text-[10px] uppercase">Marquer Payé</button>
                                 </td>
                             </tr>
                         `;
@@ -189,19 +210,23 @@
         });
 
         window.approveWithdrawal = (id) => {
-            update(ref(db, `congo_petrole/retraits/${id}`), { status: "complete" });
-            alert("Retrait marqué comme terminé.");
+            if(confirm("L'argent a-t-il été envoyé ?")) {
+                update(ref(db, `congo_petrole/retraits/${id}`), { statut: "Terminé" });
+                alert("Retrait complété.");
+            }
         };
 
         window.rejectRequest = (path, id) => {
-            if(confirm("Refuser cette demande ?")) {
+            if(confirm("Supprimer cette demande ?")) {
                 remove(ref(db, `congo_petrole/${path}/${id}`));
             }
         };
 
         window.editBal = (phone, current) => {
-            const add = prompt(`Modifier solde de ${phone} (Actuel: ${current}):`, "0");
-            if(add) update(ref(db, `congo_petrole/users/${phone}`), { balance: current + parseFloat(add) });
+            const add = prompt(`Modifier solde de ${phone}\nActuel: ${current} FC\nEntrez le montant à AJOUTER (ou mettre un - pour retirer) :`, "0");
+            if(add && !isNaN(add)) {
+                update(ref(db, `congo_petrole/users/${phone}`), { balance: current + parseFloat(add) });
+            }
         };
     </script>
 </body>
